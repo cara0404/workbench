@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
+<meta name="description" content="牛马工作台：待办、项目看板、工作日历、复盘与工具箱，单文件本地运行，数据只存在本机。">
 <title>牛马工作台 · 项目与时间管理</title>
+<!-- PWA：manifest 必须是同源静态文件，安卓 Chrome 的 WebAPK 安装器只认这个（data:/blob: 会被降级为快捷方式） -->
+<link rel="manifest" href="./manifest.json">
+<meta id="meta-theme-color" name="theme-color" content="#E5E0D0">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="牛马工作台">
 <style>
 /* ============ 设计令牌：Happy Hues / Neo-Brutalism ============ */
 :root{
@@ -4232,6 +4243,12 @@ function syncLibLabels(id){
   var jr = document.querySelector('[data-act="add-journal"]');
   if(jr) jr.textContent = lib ? '登 记' : '记一笔';
 }
+/* 状态栏颜色跟随皮肤：借书卡=纸色，粗野手账=近白，避免绿条压在白纸上 */
+function syncThemeColor(id){
+  var m = document.getElementById('meta-theme-color');
+  if(!m) return;
+  m.setAttribute('content', id === 'neo-brutal' ? '#FFFFFE' : '#E5E0D0');
+}
 function applyTheme(id){
   var ok = false;
   for(var i = 0; i < THEMES.length; i++){ if(THEMES[i].id === id) ok = true; }
@@ -4240,6 +4257,7 @@ function applyTheme(id){
   document.documentElement.setAttribute('data-theme', id);
   syncLibFont(id);
   syncLibLabels(id);
+  syncThemeColor(id);
   var sel = document.getElementById('theme-select');
   if(sel && sel.value !== id) sel.value = id;
   return id;
@@ -15057,6 +15075,28 @@ document.addEventListener('paste', function(e){
 
 /* 启动 */
 init();
+
+/* ============ PWA：注册同源静态 Service Worker ============
+   只用 "./sw.js" 相对路径，兼容 GitHub Pages 的 /仓库名/ 子目录。
+   注册失败（例如 file:// 直接打开、或旧浏览器）静默降级，页面功能不受影响。 */
+if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  /* 不等 load 事件：字体 CDN 慢的时候 load 会被拖住，SW 越早注册越好 */
+  navigator.serviceWorker.register('./sw.js').then(function(reg){
+    /* 有新版本在等待时，直接让它接管，下次打开就是最新的 */
+    if(reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    reg.addEventListener('updatefound', function(){
+      var sw = reg.installing;
+      if(!sw) return;
+      sw.addEventListener('statechange', function(){
+        if(sw.state === 'installed' && navigator.serviceWorker.controller){
+          sw.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+  }).catch(function(err){
+    console.warn('[SW] 注册失败：', err && err.message);
+  });
+}
 /* 视口放大回桌面尺寸时，把窄屏抽屉的遮罩一并收掉 */
 window.addEventListener('resize', function(){
   if(window.innerWidth > 820) closeSidebar();
