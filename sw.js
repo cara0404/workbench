@@ -1,10 +1,10 @@
 /* =========================================================
-   牛马工作台 · Service Worker
+   神的工作台 · Service Worker
    策略：导航请求网络优先（断网回退缓存），同源静态资源缓存优先 + 后台更新，
         跨域请求（Gitee / GitHub / AI 接口 / 字体 CDN）一律放行，不拦截、不缓存。
    目的：在线永远是 GitHub 上的最新 index.html，断网仍能打开，且不干扰任何 API 调用。
    ========================================================= */
-var VERSION = 'v2026-11-08-1';
+var VERSION = 'v2026-11-09-1';
 var CACHE = 'nmwb-' + VERSION;
 
 /* 首次安装时预缓存的同源静态文件（相对路径，兼容 GitHub Pages 子目录）
@@ -46,7 +46,7 @@ self.addEventListener('activate', function(e){
 function offlinePage(){
   var html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>暂时离线 · 牛马工作台</title><style>' +
+    '<title>暂时离线 · 神的工作台</title><style>' +
     'html,body{margin:0;height:100%;background:#E5E0D0;color:#22201C;}' +
     'body{display:flex;align-items:center;justify-content:center;' +
     'font-family:"Songti SC","SimSun",serif;letter-spacing:.05em;padding:32px;}' +
