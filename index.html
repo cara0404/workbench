@@ -2428,7 +2428,30 @@ html[data-theme="library"] .msg .md b{
 html[data-theme="library"] .msg .md i{font-style:italic;color:var(--ink-soft)}
 html[data-theme="library"] .msg .md a{color:var(--green)}
 
+/* ——— AI 回复末尾的「下一步」按钮 ———
+   模型有时会自带 <FollowUp label="…" query="…"/> 这类提示卡语法。
+   以前这串标签被 esc 后原样露在气泡里，像代码漏出来了。
+   现在解析成可点的下一步，点一下直接把 query 发出去。 */
+.fu-row{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.fu-chip{
+  display:flex;align-items:flex-start;gap:6px;width:100%;max-width:100%;
+  text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer;
+  font-size:11.5px;font-weight:800;line-height:1.55;padding:6px 9px;
+  border:2px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.fu-chip .fi{flex:0 0 auto;font-weight:900;line-height:1.5}
+.fu-chip:hover{background:var(--yellow)}
+.fu-chip:active{transform:translate(2px,2px);box-shadow:none}
+
 /* ——— 借书卡：细绿线语言，无圆角、无硬阴影、无 Emoji ——— */
+html[data-theme="library"] .fu-row{gap:7px;margin-top:11px}
+html[data-theme="library"] .fu-chip{
+  border:0;border-left:1px solid var(--green-line);border-radius:0;background:none;box-shadow:none;
+  color:var(--green);font-size:11.5px;padding:0 0 0 9px;letter-spacing:.04em;line-height:1.75;
+}
+html[data-theme="library"] .fu-chip .fi{display:none}
+html[data-theme="library"] .fu-chip:hover{background:none;border-left-color:var(--green)}
 html[data-theme="library"] .cp-modebar{margin-top:11px;gap:12px}
 html[data-theme="library"] .cp-modebar .seg-mini{border:0;box-shadow:none;background:none;border-radius:0;gap:16px}
 html[data-theme="library"] .cp-modebar .mbtn{
@@ -2508,7 +2531,7 @@ html[data-theme="library"] .msg-tool:hover{background:none;color:var(--green);bo
       <button class="btn btn-sm btn-block btn-mini btn-init" data-act="open-init">初始化工作台</button>
     </div>
 
-    <div class="side-foot" id="storage-foot">V1.27.2 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
+    <div class="side-foot" id="storage-foot">V1.27.3 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
   </aside>
   <button type="button" class="side-mask" id="side-mask" data-act="close-sidebar" aria-label="关闭导航" tabindex="-1"></button>
 
@@ -9072,7 +9095,7 @@ function renderSidebar(){
     }else{
       line2 = '存储：IndexedDB · 数据不出本机';
     }
-    foot.innerHTML = 'V1.27.2 · 单文件本地运行<br>' + line2;
+    foot.innerHTML = 'V1.27.3 · 单文件本地运行<br>' + line2;
   }
   if(!('Notification' in window)){
     btn.textContent = '浏览器不支持桌面通知';
@@ -10762,12 +10785,84 @@ function systemPrompt(){
 }
 
 /* =========================================================
-   V1.27.2 · 气泡里的极简 Markdown
+   V1.27.3 · 气泡里的极简 Markdown + 模型标签兜底
    AI 回复常带 ### 标题、**加粗**、1. 编号、--- 分隔线，
    原来直接 esc 出来就是满屏星号和井号。这里先 esc 再做一层
    极简解析（标题 / 加粗 / 斜体 / 行内代码 / 列表 / 引用 / 分隔线），
    标签全部由自己拼接，不存在注入风险。
    ========================================================= */
+/* ---------- 模型自带的组件标签：<FollowUp label="…" query="…"/> ----------
+   有些模型会按自己的习惯吐这种「提示卡」语法，界面上没人渲染它，
+   直接 esc 出来就是一堆尖括号和属性，像代码漏到正文里。
+   这里把它解析成「下一步」按钮：label 当文案，query 当要发的话。 */
+var FU_NAME = '(?:Follow_?[Uu]p|[Ff]ollow_?[Uu]p|[Ff]ollow_?up|[Ss]uggestions?|[Qq]uick_?[Rr]eplies|[Tt]ool_?[Cc]all|[Ff]unction_?[Cc]all|[Aa]ntml:[\\w.-]+)';
+var FU_ANY = new RegExp('<\\s*\\/?\\s*' + FU_NAME + '\\b[^<>]*>', 'gi');
+
+/* 从属性串里按优先级取一个值，兼容直引号 / 中文引号 / 无引号 */
+function fuAttr(attr, names){
+  for(var i = 0; i < names.length; i++){
+    var re = new RegExp('(?:^|[\\s:])' + names[i] + '\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|“([^”]*)”|‘([^’]*)’|([^\\s"\'>]+))', 'i');
+    var m = re.exec(attr);
+    if(m){
+      var v = m[1] || m[2] || m[3] || m[4] || m[5] || '';
+      v = String(v).trim();
+      if(v) return v;
+    }
+  }
+  return '';
+}
+
+function fuPush(list, label, query){
+  var q = String(query || '').trim();
+  var l = String(label || '').trim() || q;
+  q = q || l;
+  if(!q) return;
+  if(q.length > 300) q = q.slice(0, 300);
+  if(l.length > 120) l = l.slice(0, 118) + '…';
+  for(var i = 0; i < list.length; i++){ if(list[i].query === q) return; }
+  if(list.length < 4) list.push({ label: l, query: q });
+}
+
+/* 返回 { text: 去掉标签的正文, list: [{label, query}] } */
+function extractFollowUps(src){
+  var text = String(src == null ? '' : src);
+  var list = [];
+  /* 流式输出时末尾可能正写到一半（<FollowUp lab… 还没有 >）：先掐掉，等写完再显示 */
+  text = text.replace(/<\s*\/?\s*[A-Za-z][\w:.-]*[^<>]*$/, '');
+
+  /* 工具调用包裹（<tool_call>…</tool_call>）：连里面的 JSON 一起丢掉，
+     这是模型内部调试语法，露出来只会吓人。必须先于标签扫描做，
+     否则 JSON 会被当成按钮文案。 */
+  text = text.replace(/<\s*(?:tool_call|function_call|antml:[\w.-]+)\b[^<>]*>[\s\S]{0,600}?<\s*\/\s*(?:tool_call|function_call|antml:[\w.-]+)\s*>/gi, '');
+
+  /* ① 标签扫描：既能处理 <X .../>，也能吃下 <X ...>正文</X> */
+  var re = new RegExp('<\\s*' + FU_NAME + '\\b([^<>]*)>', 'gi');
+  var out = '', last = 0, m;
+  while((m = re.exec(text))){
+    var attr = m[1] || '';
+    var tagEnd = m.index + m[0].length;
+    out += text.slice(last, m.index);
+    last = tagEnd;
+    var body = '';
+    if(!/\/\s*$/.test(attr)){
+      var cm = new RegExp('^([\\s\\S]{0,400}?)<\\s*\\/\\s*' + FU_NAME + '\\s*>', 'i').exec(text.slice(tagEnd));
+      if(cm){ body = cm[1]; last = tagEnd + cm[0].length; re.lastIndex = last; }
+    }
+    var b = String(body).replace(/<[^<>]*>/g, '').trim();
+    var q = fuAttr(attr, ['query', 'q', 'prompt', 'message', 'value', 'content']) || b;
+    var l = fuAttr(attr, ['label', 'title', 'text', 'name']) || b;
+    fuPush(list, l, q);
+  }
+  text = out + text.slice(last);
+
+  /* ② 残留的孤立标签（只有收尾 / 属性乱写）一律吞掉 */
+  text = text.replace(FU_ANY, '');
+  if(list.length) text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}$/gm, '');
+  return { text: text.replace(/\s+$/, ''), list: list };
+}
+
+function stripAiTags(src){ return extractFollowUps(src).text; }
+
 function mdInline(t){
   /* 行内代码先抽出来，免得里面的 * 被当成加粗 */
   var codes = [];
@@ -10793,7 +10888,7 @@ var MD_QUOTE = /^\s{0,3}(?:&gt;|>)\s?/;
 var MD_BLOCK = /^\s{0,3}(#{1,6}\s+|[-*+]\s+|\d{1,3}[.)]\s+|(?:&gt;|>)\s?)/;
 
 function mdLite(src){
-  var lines = esc(String(src == null ? '' : src)).replace(/\r\n?/g, '\n').split('\n');
+  var lines = esc(stripAiTags(src)).replace(/\r\n?/g, '\n').split('\n');
   var out = [], i = 0, n = lines.length, m;
   while(i < n){
     var ln = lines[i].replace(/\s+$/, '');
@@ -10880,10 +10975,19 @@ function renderCopilot(){
               '<div class="cp-guide-body">' + esc(m.text) + '</div></details>';
     }else{
       /* 包一层 .msg-txt：流式输出时只改这一个文本节点，不会整屏闪。
-         AI 的回复按极简 Markdown 渲染，用户自己打的原样保留。 */
+         AI 的回复按极简 Markdown 渲染，用户自己打的原样保留。
+         AI 气泡里若带 <FollowUp …/> 提示卡语法，解析成正文 + 下一步按钮。 */
       var isAI = (m.role !== 'user');
+      var fu = isAI ? extractFollowUps(m.text) : { text: m.text, list: [] };
       html += '<span class="msg-txt' + (isAI ? ' md' : '') + '">' +
-              (isAI ? mdLite(m.text) : esc(m.text)) + '</span>';
+              (isAI ? mdLite(fu.text) : esc(m.text)) + '</span>';
+      if(fu.list.length && !m.live){
+        cpFuStore[m.id] = fu.list;
+        html += '<div class="fu-row">' + fu.list.map(function(f, i){
+          return '<button type="button" class="fu-chip" data-act="cp-fu" data-id="' + m.id + '" data-i="' + i + '"' +
+                 ' title="' + esc(f.query) + '"><span class="fi">↪</span><span>' + esc(f.label) + '</span></button>';
+        }).join('') + '</div>';
+      }
     }
     if(m.ops && m.ops.length){
       var pending = pendingProjectName(m.ops);
@@ -12100,6 +12204,7 @@ function advisorSystemPrompt(){
     '1. 【防打断与排优先级】：当用户问“现在先干嘛”时，第一顺位永远盯死“刚性考核时限”（尤其是系统巡查签收、今日到点分时打卡、已逾期/今日截止事项，绝不能漏看超时）；第二顺位处理耗时短的闭环尾巴（如签字报销、电话核实）；最后安排大块材料工作。每次只给最清晰的 1~3 步行动建议，帮用户快速找回工作状态，不要长篇大论制造焦虑。',
     '2. 【进度追问与材料起草】：当用户询问某项目进展，或要求基于近期工作写汇报/小结/情况说明时，严格基于上下文中的【近期工作留痕】、【时间复盘】和【已完成待办】作答，实事求是，绝不编造未发生的事实和数据。',
     '3. 【务实文风】：说话干脆、利落、温和、懂基层痛点，不打官腔，不说假大空的废话。用清晰的序号或短句排版。',
+    '4. 【输出格式】：只输出中文正文，可以用简单序号、短句、加粗。不要输出 <FollowUp>、<Suggest> 这类组件标签，不要输出 JSON、代码块或任何卡片语法；需要追问时，直接用一句自然中文问出来。',
     '',
     '以下是用户工作台的实时全量数据上下文：',
     buildAdvisorContext()
@@ -12245,7 +12350,7 @@ async function cpRunChat(text, imgs){
     var isLast = (i === history.length - 1);
     var body = (m.role === 'user')
       ? ((m.raw != null && m.raw !== '') ? m.raw : m.text)
-      : String(m.text || '');
+      : extractFollowUps(m.text).text;
     if(isLast && m.role === 'user' && imgs.length){
       messages.push({ role:'user', content: [{ type:'text', text: body || '请结合这张图片回答。' }].concat(
         imgs.map(function(im){ return { type:'image_url', image_url:{ url: im.dataUrl } }; })
@@ -12305,6 +12410,26 @@ async function cpChatRegenerate(){
 }
 
 /* ——— 快捷指令 / 清空 / 复制 / 转去拆解 ——— */
+/* 每条消息解析出来的「下一步」按钮，按消息 id 暂存（不写进 state，免得缓存变脏） */
+var cpFuStore = {};
+
+function cpFuSend(id, i){
+  var list = cpFuStore[id] || [];
+  var q = list[i];
+  if(!q) return;
+  if(state.cpBusy){ toast('正在生成，请稍候', 'warn'); return; }
+  if(state.cpMode !== 'chat'){
+    state.cpMode = 'chat';
+    ensureChatGreeting();
+    syncCpMode();
+  }
+  var ta = document.getElementById('cp-text');
+  if(!ta) return;
+  ta.value = q.query || q.label;
+  renderCopilot();
+  cpSend();
+}
+
 function cpQuickSend(i){
   var q = CP_QUICK[i];
   if(!q) return;
@@ -12360,7 +12485,8 @@ function legacyCopy(txt){
 function cpCopyMsg(id){
   var m = findCpMsg(id);
   if(!m) return;
-  var txt = String(m.text || '');
+  /* 复制的是正文，别把 <FollowUp …/> 这类标签一起复制走 */
+  var txt = extractFollowUps(m.text).text;
   function ok(){ toast('已复制这条回复', 'ok'); }
   function fail(){ toast('复制失败，可以手动选中文字复制', 'warn'); }
   if(navigator.clipboard && navigator.clipboard.writeText){
@@ -12374,7 +12500,7 @@ function cpToAction(id){
   var m = findCpMsg(id);
   if(!m) return;
   var ta = document.getElementById('cp-text');
-  if(ta) ta.value = String(m.text || '');
+  if(ta) ta.value = extractFollowUps(m.text).text;
   state.cpMode = 'action';
   syncCpMode();
   renderCopilot();
@@ -15638,6 +15764,7 @@ document.addEventListener('click', function(e){
   if(act === 'cp-retry'){ cpRegenerate(); return; }
   if(act === 'cp-mode'){ setCpMode(el.dataset.mode); return; }
   if(act === 'cp-quick'){ cpQuickSend(parseInt(el.dataset.i, 10)); return; }
+  if(act === 'cp-fu'){ cpFuSend(el.dataset.id, parseInt(el.dataset.i, 10)); return; }
   if(act === 'cp-clear'){ cpClearChat(); return; }
   if(act === 'cp-copy'){ cpCopyMsg(el.dataset.id); return; }
   if(act === 'cp-to-action'){ cpToAction(el.dataset.id); return; }

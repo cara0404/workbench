@@ -4,7 +4,7 @@
         跨域请求（Gitee / GitHub / AI 接口 / 字体 CDN）一律放行，不拦截、不缓存。
    目的：在线永远是 GitHub 上的最新 index.html，断网仍能打开，且不干扰任何 API 调用。
    ========================================================= */
-var VERSION = 'v2026-11-10-3';
+var VERSION = 'v2026-11-10-4';
 var CACHE = 'nmwb-' + VERSION;
 
 /* 首次安装时预缓存的同源静态文件（相对路径，兼容 GitHub Pages 子目录）
