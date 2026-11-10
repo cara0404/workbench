@@ -2354,13 +2354,16 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
 .cp-clear:hover{background:var(--yellow)}
 .cp-clear:active{transform:translate(1px,1px);box-shadow:none}
 
-/* ——— 快捷参谋指令（横向可滚） ——— */
-.cp-quick-bar{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:1px 1px 5px;margin-bottom:-3px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.cp-quick-bar::-webkit-scrollbar{height:0}
+/* ——— 快捷参谋指令 ———
+   副驾驶面板本身很窄（桌面 320~360px），一排塞不下四条指令。
+   原来用横向滚动，最后一条会被面板边缘切掉半个字，看着像坏掉。
+   改成整行换行：四条指令各占一格，永远不被裁切，也不用找横向滚动条。 */
+.cp-quick-bar{display:flex;flex-wrap:wrap;gap:6px;padding:1px;min-width:0}
 .cp-quick-bar[hidden]{display:none}
 .cp-quick{
-  flex:none;cursor:pointer;white-space:nowrap;
+  flex:0 1 auto;max-width:100%;cursor:pointer;white-space:nowrap;
   display:inline-flex;align-items:center;gap:4px;
+  overflow:hidden;text-overflow:ellipsis;
   font-size:11.5px;font-weight:800;line-height:1.5;padding:4px 10px;
   border:2px solid var(--ink);border-radius:999px;background:var(--bg2);
   box-shadow:2px 2px 0 var(--ink);color:var(--ink);
@@ -2458,7 +2461,7 @@ html[data-theme="library"] .msg-tool:hover{background:none;color:var(--green);bo
       <button class="btn btn-sm btn-block btn-mini btn-init" data-act="open-init">初始化工作台</button>
     </div>
 
-    <div class="side-foot" id="storage-foot">V1.27.0 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
+    <div class="side-foot" id="storage-foot">V1.27.1 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
   </aside>
   <button type="button" class="side-mask" id="side-mask" data-act="close-sidebar" aria-label="关闭导航" tabindex="-1"></button>
 
@@ -9022,7 +9025,7 @@ function renderSidebar(){
     }else{
       line2 = '存储：IndexedDB · 数据不出本机';
     }
-    foot.innerHTML = 'V1.27.0 · 单文件本地运行<br>' + line2;
+    foot.innerHTML = 'V1.27.1 · 单文件本地运行<br>' + line2;
   }
   if(!('Notification' in window)){
     btn.textContent = '浏览器不支持桌面通知';
