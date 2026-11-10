@@ -2381,6 +2381,53 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
 .msg-tool:hover{background:var(--bg2)}
 .msg-tool:active{transform:translate(1px,1px)}
 
+/* ——— 气泡里的轻量 Markdown 排版 ——— */
+.msg .md{white-space:normal}
+.msg .md > :first-child{margin-top:0}
+.msg .md > :last-child{margin-bottom:0}
+.msg .md p{margin:0 0 8px}
+.msg .md h3,.msg .md h4{margin:13px 0 7px;font-size:13.5px;font-weight:900;line-height:1.5}
+.msg .md ul,.msg .md ol{margin:0 0 8px;padding-left:20px}
+.msg .md li{margin:4px 0}
+.msg .md li::marker{font-weight:900;color:var(--ink)}
+.msg .md hr{height:0;border:0;border-top:2px dashed rgba(31,18,53,.22);margin:12px 0}
+.msg .md blockquote{margin:0 0 8px;padding:1px 0 1px 10px;border-left:3px solid var(--ink);color:#4b3f5c}
+.msg .md code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+  padding:1px 4px;border:1px solid rgba(31,18,53,.25);border-radius:4px;background:var(--bg2);
+}
+.msg .md a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.msg .md b{font-weight:900}
+.msg .md pre{
+  margin:0 0 8px;padding:8px 10px;overflow-x:auto;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.6;
+  border:2px solid var(--ink);border-radius:8px;background:var(--bg2);
+  white-space:pre;
+}
+
+/* ——— 借书卡：细绿线语言，中文一律轻体，靠颜色与下划线而不是字重做强调 ——— */
+html[data-theme="library"] .msg .md h3,
+html[data-theme="library"] .msg .md h4{
+  font-size:14.5px;color:var(--green);letter-spacing:.08em;margin:16px 0 7px;
+  padding-bottom:5px;border-bottom:1px solid var(--green-line);
+}
+html[data-theme="library"] .msg .md hr{border-top:1px solid var(--green-line);margin:13px 0}
+html[data-theme="library"] .msg .md blockquote{border-left:1px solid var(--green-line);color:var(--ink-soft)}
+html[data-theme="library"] .msg .md code{border:1px solid var(--green-line);border-radius:0;background:none;color:var(--green)}
+html[data-theme="library"] .msg .md pre{
+  border:0;border-left:1px solid var(--green-line);border-radius:0;background:none;
+  padding:6px 0 6px 10px;color:var(--ink-soft);
+}
+html[data-theme="library"] .msg .md li::marker{color:var(--green);font-weight:400}
+html[data-theme="library"] .msg .md b{
+  font-weight:400!important;color:var(--green);
+  /* 中文不能加粗，用一条细绿下划线做强调（打字机风格） */
+  text-decoration:underline;text-decoration-color:var(--green-line);
+  text-decoration-thickness:1px;text-underline-offset:4px;
+}
+html[data-theme="library"] .msg .md i{font-style:italic;color:var(--ink-soft)}
+html[data-theme="library"] .msg .md a{color:var(--green)}
+
 /* ——— 借书卡：细绿线语言，无圆角、无硬阴影、无 Emoji ——— */
 html[data-theme="library"] .cp-modebar{margin-top:11px;gap:12px}
 html[data-theme="library"] .cp-modebar .seg-mini{border:0;box-shadow:none;background:none;border-radius:0;gap:16px}
@@ -2461,7 +2508,7 @@ html[data-theme="library"] .msg-tool:hover{background:none;color:var(--green);bo
       <button class="btn btn-sm btn-block btn-mini btn-init" data-act="open-init">初始化工作台</button>
     </div>
 
-    <div class="side-foot" id="storage-foot">V1.27.1 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
+    <div class="side-foot" id="storage-foot">V1.27.2 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
   </aside>
   <button type="button" class="side-mask" id="side-mask" data-act="close-sidebar" aria-label="关闭导航" tabindex="-1"></button>
 
@@ -9025,7 +9072,7 @@ function renderSidebar(){
     }else{
       line2 = '存储：IndexedDB · 数据不出本机';
     }
-    foot.innerHTML = 'V1.27.1 · 单文件本地运行<br>' + line2;
+    foot.innerHTML = 'V1.27.2 · 单文件本地运行<br>' + line2;
   }
   if(!('Notification' in window)){
     btn.textContent = '浏览器不支持桌面通知';
@@ -10714,6 +10761,107 @@ function systemPrompt(){
   ].join('\n');
 }
 
+/* =========================================================
+   V1.27.2 · 气泡里的极简 Markdown
+   AI 回复常带 ### 标题、**加粗**、1. 编号、--- 分隔线，
+   原来直接 esc 出来就是满屏星号和井号。这里先 esc 再做一层
+   极简解析（标题 / 加粗 / 斜体 / 行内代码 / 列表 / 引用 / 分隔线），
+   标签全部由自己拼接，不存在注入风险。
+   ========================================================= */
+function mdInline(t){
+  /* 行内代码先抽出来，免得里面的 * 被当成加粗 */
+  var codes = [];
+  t = t.replace(/`([^`\n]+)`/g, function(_, c){
+    codes.push(c);
+    return '\u0001' + (codes.length - 1) + '\u0001';
+  });
+  t = t.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  t = t.replace(/\*\*([^*\n][^\n]*?)\*\*/g, '<b>$1</b>');
+  t = t.replace(/__([^_\n][^\n]*?)__/g, '<b>$1</b>');
+  t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+  t = t.replace(/~~([^~\n]+)~~/g, '<s>$1</s>');
+  t = t.replace(/\u0001(\d+)\u0001/g, function(_, i){ return '<code>' + codes[Number(i)] + '</code>'; });
+  return t;
+}
+
+var MD_LIST_UL = /^\s{0,3}[-*+]\s+/;
+var MD_LIST_OL = /^\s{0,3}(\d{1,3})[.)]\s+/;
+var MD_HEAD = /^\s{0,3}(#{1,6})\s+(.*)$/;
+var MD_HR = /^\s{0,3}([-*_])\s*(?:\1\s*){2,}$/;
+var MD_QUOTE = /^\s{0,3}(?:&gt;|>)\s?/;
+var MD_BLOCK = /^\s{0,3}(#{1,6}\s+|[-*+]\s+|\d{1,3}[.)]\s+|(?:&gt;|>)\s?)/;
+
+function mdLite(src){
+  var lines = esc(String(src == null ? '' : src)).replace(/\r\n?/g, '\n').split('\n');
+  var out = [], i = 0, n = lines.length, m;
+  while(i < n){
+    var ln = lines[i].replace(/\s+$/, '');
+    if(!ln.trim()){ i++; continue; }
+
+    if((m = ln.match(MD_HEAD))){
+      var lv = m[1].length <= 2 ? 3 : 4;   /* 气泡里不需要更大的字号 */
+      out.push('<h' + lv + '>' + mdInline(m[2].replace(/\s*#+\s*$/, '')) + '</h' + lv + '>');
+      i++; continue;
+    }
+    if(MD_HR.test(ln)){ out.push('<hr>'); i++; continue; }
+    /* ``` 代码块：原样保留换行 */
+    if(/^\s{0,3}```/.test(ln)){
+      var code = [];
+      i++;
+      while(i < n && !/^\s{0,3}```/.test(lines[i])){ code.push(lines[i]); i++; }
+      if(i < n) i++;   /* 吃掉收尾的 ``` */
+      out.push('<pre>' + code.join('\n') + '</pre>');
+      continue;
+    }
+    if(MD_QUOTE.test(ln)){
+      var q = [];
+      while(i < n && MD_QUOTE.test(lines[i])){ q.push(mdInline(lines[i].replace(MD_QUOTE, ''))); i++; }
+      out.push('<blockquote>' + q.join('<br>') + '</blockquote>');
+      continue;
+    }
+    if(MD_LIST_UL.test(ln)){
+      var ul = [], item = null;
+      while(i < n){
+        var lu = lines[i];
+        if(MD_LIST_UL.test(lu)){ item = [mdInline(lu.replace(MD_LIST_UL, ''))]; ul.push(item); i++; continue; }
+        /* 缩进续行（AI 常把子说明另起一行并缩进）：接到上一条里 */
+        if(item && lu.trim() && /^\s{2,}/.test(lu) && !MD_HR.test(lu) && !MD_HEAD.test(lu)){
+          item.push(mdInline(lu.replace(/^\s+/, '').replace(/^[-*+]\s+/, '· '))); i++; continue;
+        }
+        break;
+      }
+      out.push('<ul>' + ul.map(function(it){ return '<li>' + it.join('<br>') + '</li>'; }).join('') + '</ul>');
+      continue;
+    }
+    if((m = ln.match(MD_LIST_OL))){
+      var start = Number(m[1]), ol = [], oitem = null;
+      while(i < n){
+        var lo = lines[i], mo = lo.match(MD_LIST_OL);
+        if(mo){ oitem = [mdInline(lo.replace(MD_LIST_OL, ''))]; ol.push(oitem); i++; continue; }
+        if(oitem && lo.trim() && /^\s{2,}/.test(lo) && !MD_HR.test(lo) && !MD_HEAD.test(lo)){
+          oitem.push(mdInline(lo.replace(/^\s+/, '').replace(/^[-*+]\s+/, '· '))); i++; continue;
+        }
+        break;
+      }
+      out.push('<ol' + (start > 1 ? ' start="' + start + '"' : '') + '>' +
+        ol.map(function(it){ return '<li>' + it.join('<br>') + '</li>'; }).join('') + '</ol>');
+      continue;
+    }
+    /* 连续普通行 → 一个段落，行内换行保留 */
+    var p = [];
+    while(i < n){
+      var cur = lines[i].replace(/\s+$/, '');
+      if(!cur.trim() || MD_BLOCK.test(cur) || MD_HR.test(cur)) break;
+      p.push(mdInline(cur.replace(/^\s+/, '')));
+      i++;
+    }
+    if(p.length) out.push('<p>' + p.join('<br>') + '</p>');
+    else i++;   /* 兜底：保证指针一定往前走，避免死循环 */
+  }
+  return out.join('');
+}
+
 function renderCopilot(){
   var box = document.getElementById('cp-body');
   var sub = document.getElementById('cp-model');
@@ -10731,8 +10879,11 @@ function renderCopilot(){
       html += '<details class="cp-guide"><summary><span>怎么用我 · 操作说明</span></summary>' +
               '<div class="cp-guide-body">' + esc(m.text) + '</div></details>';
     }else{
-      /* 包一层 .msg-txt：流式输出时只改这一个文本节点，不会整屏闪 */
-      html += '<span class="msg-txt">' + esc(m.text) + '</span>';
+      /* 包一层 .msg-txt：流式输出时只改这一个文本节点，不会整屏闪。
+         AI 的回复按极简 Markdown 渲染，用户自己打的原样保留。 */
+      var isAI = (m.role !== 'user');
+      html += '<span class="msg-txt' + (isAI ? ' md' : '') + '">' +
+              (isAI ? mdLite(m.text) : esc(m.text)) + '</span>';
     }
     if(m.ops && m.ops.length){
       var pending = pendingProjectName(m.ops);
@@ -12060,10 +12211,17 @@ function callAIStream(messages, onDelta){
   });
 }
 
-/* 流式时只替换这一个文本节点，避免整屏重绘 */
+/* 流式时只替换这一个文本节点，避免整屏重绘；
+   按 Markdown 渲染但限速（最快 140ms 一次），否则每帧重排会抖 */
 function liveAiBubble(id, text){
   var el = document.querySelector('[data-msg="' + id + '"] .msg-txt');
-  if(el) el.textContent = text;
+  if(el){
+    var now = Date.now();
+    if(!el._mdAt || now - el._mdAt > 140){
+      el._mdAt = now;
+      el.innerHTML = el.classList.contains('md') ? mdLite(text) : esc(text);
+    }
+  }
   var box = document.getElementById('cp-body');
   if(box) box.scrollTop = box.scrollHeight;
 }
