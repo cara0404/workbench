@@ -2333,6 +2333,79 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
 /* 名字类标签（项目名 / 子任务名）可能很长：允许在胶囊内折行，
    否则 nowrap 的胶囊会被截断成半个字，或把整行撑到屏幕外 */
 .chip.c,.chip.pl{white-space:nowrap}
+
+/* =========================================================
+   V1.27.0 · 副驾驶「参谋对话」模式（Advisor Mode）
+   头部多一行模式开关；chat 模式下输入框顶部出现快捷指令；
+   AI 气泡底部挂「复制 / 转去拆解」两个轻量操作。
+   ========================================================= */
+/* ——— 头部：整行模式条 ——— */
+.cp-head{flex-wrap:wrap}
+.cp-modebar{display:flex;align-items:center;gap:8px;flex:1 1 100%;min-width:0;margin-top:7px}
+.cp-modebar .seg-mini{flex:none;max-width:100%}
+.cp-modebar .mbtn{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.cp-modebar .qi{font-size:11px;line-height:1;font-weight:400}
+.cp-clear{
+  margin-left:auto;flex:none;cursor:pointer;
+  font-size:11px;font-weight:800;line-height:1.4;padding:3px 9px;
+  border:2px solid var(--ink);border-radius:999px;background:var(--bg2);
+  box-shadow:1px 1px 0 var(--ink);color:var(--ink);white-space:nowrap;
+}
+.cp-clear:hover{background:var(--yellow)}
+.cp-clear:active{transform:translate(1px,1px);box-shadow:none}
+
+/* ——— 快捷参谋指令（横向可滚） ——— */
+.cp-quick-bar{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:1px 1px 5px;margin-bottom:-3px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cp-quick-bar::-webkit-scrollbar{height:0}
+.cp-quick-bar[hidden]{display:none}
+.cp-quick{
+  flex:none;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11.5px;font-weight:800;line-height:1.5;padding:4px 10px;
+  border:2px solid var(--ink);border-radius:999px;background:var(--bg2);
+  box-shadow:2px 2px 0 var(--ink);color:var(--ink);
+}
+.cp-quick:hover{background:var(--yellow)}
+.cp-quick:active{transform:translate(2px,2px);box-shadow:none}
+
+/* ——— AI 气泡底部：复制 / 转去拆解 ——— */
+.msg-tools{display:flex;gap:6px;flex-wrap:wrap;white-space:normal;margin-top:9px;padding-top:7px;border-top:2px dashed rgba(31,18,53,.16)}
+.msg-tool{
+  cursor:pointer;white-space:nowrap;
+  font-size:10.5px;font-weight:800;line-height:1.5;padding:2px 8px;
+  border:2px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);
+}
+.msg-tool:hover{background:var(--bg2)}
+.msg-tool:active{transform:translate(1px,1px)}
+
+/* ——— 借书卡：细绿线语言，无圆角、无硬阴影、无 Emoji ——— */
+html[data-theme="library"] .cp-modebar{margin-top:11px;gap:12px}
+html[data-theme="library"] .cp-modebar .seg-mini{border:0;box-shadow:none;background:none;border-radius:0;gap:16px}
+html[data-theme="library"] .cp-modebar .mbtn{
+  border:0;border-bottom:1px solid transparent;border-radius:0;background:none;box-shadow:none;
+  color:var(--ink-soft);font-size:11.5px;padding:2px 0 3px;letter-spacing:.05em;
+}
+html[data-theme="library"] .cp-modebar .mbtn.on{
+  background:none;color:var(--green);border-bottom:1px solid var(--green);
+}
+html[data-theme="library"] .cp-modebar .qi,
+html[data-theme="library"] .cp-quick .qi{display:none}
+html[data-theme="library"] .cp-clear{
+  border:0;border-bottom:1px solid var(--green-line);border-radius:0;background:none;box-shadow:none;
+  color:var(--ink-soft);font-size:10.5px;padding:1px 1px 2px;letter-spacing:.06em;
+}
+html[data-theme="library"] .cp-clear:hover{background:none;color:var(--rust);border-bottom-color:var(--rust)}
+html[data-theme="library"] .cp-quick{
+  border:0;border-bottom:1px solid var(--green-line);border-radius:0;background:none;box-shadow:none;
+  color:var(--green);font-size:11.5px;padding:2px 1px 3px;letter-spacing:.05em;
+}
+html[data-theme="library"] .cp-quick:hover{background:none;color:var(--green);border-bottom-color:var(--green)}
+html[data-theme="library"] .msg-tools{border-top:0;padding-top:6px;gap:14px}
+html[data-theme="library"] .msg-tool{
+  border:0;border-bottom:1px solid var(--green-line);border-radius:0;background:none;
+  color:var(--ink-soft);font-size:10.5px;padding:0 0 1px;letter-spacing:.06em;
+}
+html[data-theme="library"] .msg-tool:hover{background:none;color:var(--green);border-bottom-color:var(--green)}
 </style>
 </head>
 <body>
@@ -2385,7 +2458,7 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
       <button class="btn btn-sm btn-block btn-mini btn-init" data-act="open-init">初始化工作台</button>
     </div>
 
-    <div class="side-foot" id="storage-foot">V1.26.3 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
+    <div class="side-foot" id="storage-foot">V1.27.0 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
   </aside>
   <button type="button" class="side-mask" id="side-mask" data-act="close-sidebar" aria-label="关闭导航" tabindex="-1"></button>
 
@@ -2909,9 +2982,17 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
         <button class="btn btn-sm" data-act="open-api" title="接口设置">设置</button>
         <button class="btn btn-sm" data-act="toggle-copilot" title="收起">×</button>
       </div>
+      <div class="cp-modebar">
+        <div class="seg-mini" id="cp-modes" role="group" aria-label="副驾驶模式">
+          <button type="button" class="mbtn on" data-act="cp-mode" data-mode="action" aria-pressed="true"><span class="qi">⚡</span>录入拆解</button>
+          <button type="button" class="mbtn" data-act="cp-mode" data-mode="chat" aria-pressed="false"><span class="qi">🧭</span>参谋对话</button>
+        </div>
+        <button type="button" class="cp-clear" data-act="cp-clear" title="清空当前对话历史，释放 Token（欢迎语保留）">清空对话</button>
+      </div>
     </div>
     <div class="cp-body" id="cp-body"></div>
     <div class="cp-input">
+      <div class="cp-quick-bar" id="cp-quick" hidden aria-label="快捷参谋指令"></div>
       <div class="row gap-sm" style="margin-bottom:-1px">
         <button class="btn btn-sm" data-act="cp-pick-img" title="选择图片；也可以直接 Ctrl+V 粘贴截图（需模型支持视觉）">图片</button>
         <input type="file" id="cp-file" accept="image/*" multiple hidden>
@@ -2919,7 +3000,7 @@ html[data-theme="library"] .cp-scrim{background:rgba(34,32,28,.16)}
       <div class="cp-imgs" id="cp-imgs" hidden></div>
       <textarea id="cp-text" rows="4" placeholder="直接粘贴上级通知 / 粤政易群消息 / 会议纪要，会自动拆成项目、子任务和循环待办；也可以发通知截图、表格照片（需支持视觉的模型），或随手记一句今天做了什么。"></textarea>
       <div class="row-between cp-send-row">
-        <span class="hint">AI 只提方案，确认后才写入</span>
+        <span class="hint" id="cp-hint">AI 只提方案，确认后才写入</span>
         <div class="row gap-sm cp-send-btns">
           <button class="btn btn-sm" data-act="cp-retry" id="cp-retry" title="还没有可重新发送的消息" aria-label="重新发送上一条消息，重新生成答案" disabled>↻ 重发</button>
           <button class="btn btn-primary btn-sm" data-act="cp-send" id="cp-send">发送（Ctrl+Enter）</button>
@@ -4277,6 +4358,7 @@ var state = {
   cpMessages: [],
   cpImgs: [],
   cpBusy: false,
+  cpMode: 'action',
   pendingReport: '',
   qaMode: 'single',
   qaTimes: [],
@@ -8940,7 +9022,7 @@ function renderSidebar(){
     }else{
       line2 = '存储：IndexedDB · 数据不出本机';
     }
-    foot.innerHTML = 'V1.26.3 · 单文件本地运行<br>' + line2;
+    foot.innerHTML = 'V1.27.0 · 单文件本地运行<br>' + line2;
   }
   if(!('Notification' in window)){
     btn.textContent = '浏览器不支持桌面通知';
@@ -10634,6 +10716,9 @@ function renderCopilot(){
   var sub = document.getElementById('cp-model');
   sub.textContent = isConfigured() ? (state.config.model + ' · ' + (state.config.baseURL.replace(/^https?:\/\//,'').slice(0, 26))) : '未配置模型（本地演示解析）';
 
+  if(!cpQuickBuilt) renderCpQuick();
+  syncCpMode();
+
   box.innerHTML = state.cpMessages.map(function(m){
     var html = '<div class="msg ' + (m.role === 'user' ? 'user' : 'ai') + '" data-msg="' + m.id + '">';
     if(m.imgs && m.imgs.length){
@@ -10643,7 +10728,8 @@ function renderCopilot(){
       html += '<details class="cp-guide"><summary><span>怎么用我 · 操作说明</span></summary>' +
               '<div class="cp-guide-body">' + esc(m.text) + '</div></details>';
     }else{
-      html += esc(m.text);
+      /* 包一层 .msg-txt：流式输出时只改这一个文本节点，不会整屏闪 */
+      html += '<span class="msg-txt">' + esc(m.text) + '</span>';
     }
     if(m.ops && m.ops.length){
       var pending = pendingProjectName(m.ops);
@@ -10652,6 +10738,13 @@ function renderCopilot(){
         html += '<div class="row" style="margin-top:9px"><button class="btn btn-sm btn-primary" data-act="confirm-ops" data-id="' + m.id + '">确认执行</button>' +
                 '<button class="btn btn-sm" data-act="cancel-ops" data-id="' + m.id + '">全部取消</button></div>';
       }
+    }
+    /* 参谋模式的回复：挂两个轻量操作（流式生成中先不挂） */
+    if(m.chat && !m.live && !m.greet && m.role === 'ai' && !(m.ops && m.ops.length) && String(m.text || '').trim()){
+      html += '<div class="msg-tools">' +
+        '<button type="button" class="msg-tool" data-act="cp-copy" data-id="' + m.id + '">⧉ 复制</button>' +
+        '<button type="button" class="msg-tool" data-act="cp-to-action" data-id="' + m.id + '">＋ 转去拆解录入</button>' +
+      '</div>';
     }
     html += '</div>';
     return html;
@@ -11617,6 +11710,521 @@ function updateCpControls(){
   if(send) send.disabled = !!state.cpBusy;
 }
 
+/* =========================================================
+   V1.27.0 · 参谋对话模式（Advisor Mode）
+   与「录入拆解」共用同一个 #copilot：
+   action 模式只出确认卡；chat 模式挂载实时上下文做自由对话。
+   上下文只取 待办 / 项目 / 留痕 / 复盘 四类，
+   严禁碰 state.toolbox（收表点名、发票明细等历史数据会污染判断）。
+   ========================================================= */
+var CP_ACTION_PH = '直接粘贴上级通知 / 粤政易群消息 / 会议纪要，会自动拆成项目、子任务和循环待办；也可以发通知截图、表格照片（需支持视觉的模型），或随手记一句今天做了什么。';
+var CP_CHAT_PH = '问我接下来先干嘛、梳理今日重点、追问某项目进展，或让我根据近期留痕写材料…';
+
+/* 快捷参谋指令：点一下直接把预设问题发出去 */
+var CP_QUICK = [
+  { i:'🎯', k:'现在先干嘛',
+    v:'我刚忙完手头的事（或刚被打断回来），请结合当前时间、我的未完成待办、今日分时打卡进度和逾期情况，告诉我接下来1小时最该先做哪1~2件事？为什么？' },
+  { i:'🌅', k:'今日排雷早报',
+    v:'请帮我扫描今天的工作台：有哪些今日必做、分时打卡、临期或逾期任务？有哪些项目卡点？给我一份精炼的今日行动清单。' },
+  { i:'📝', k:'今日留痕小结',
+    v:'请根据我今天已完成的待办和今日新增的时间流留痕（含独立工作日记），帮我梳理一段今天的工作小结，看看有没有遗漏的后续尾巴（如待报销、待跟进）。' },
+  { i:'⚠️', k:'临期与风险检查',
+    v:'检查我所有进行中的项目、子任务和未完成待办，有哪些临近截止日期或记录过「问题」尚未「整改」的事项？帮我列出风险点。' }
+];
+
+var cpQuickBuilt = false;
+function renderCpQuick(){
+  var box = document.getElementById('cp-quick');
+  if(!box) return;
+  box.innerHTML = CP_QUICK.map(function(q, i){
+    return '<button type="button" class="cp-quick" data-act="cp-quick" data-i="' + i + '">' +
+      '<span class="qi">' + q.i + '</span>' + esc(q.k) + '</button>';
+  }).join('');
+  cpQuickBuilt = true;
+}
+
+/* 模式切换时同步 输入框提示 / 快捷栏 / 分段按钮 */
+function syncCpMode(){
+  var chat = state.cpMode === 'chat';
+  $all('#cp-modes .mbtn').forEach(function(b){
+    var on = b.dataset.mode === state.cpMode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  var ta = document.getElementById('cp-text');
+  if(ta) ta.placeholder = chat ? CP_CHAT_PH : CP_ACTION_PH;
+  var hint = document.getElementById('cp-hint');
+  if(hint) hint.textContent = chat ? '已挂载待办 / 项目 / 复盘上下文' : 'AI 只提方案，确认后才写入';
+  var qb = document.getElementById('cp-quick');
+  if(qb) qb.hidden = !chat;
+}
+
+function ensureChatGreeting(){
+  var has = false;
+  for(var i = 0; i < state.cpMessages.length; i++){
+    var m = state.cpMessages[i];
+    if(!m.howto && (m.role === 'user' || m.role === 'ai')){ has = true; break; }
+  }
+  if(has) return;
+  state.cpMessages.push({
+    id: uid('m'), role:'ai', chat:true, greet:true,
+    text: '参谋模式已就绪。今天的待办、分时打卡、逾期预警、进行中项目和最近 7 天的留痕，都已经装进上下文了。\n可以直接问我，也可以点下面的快捷指令。'
+  });
+}
+
+function setCpMode(mode){
+  mode = (mode === 'chat') ? 'chat' : 'action';
+  if(state.cpMode === mode){ syncCpMode(); return; }
+  state.cpMode = mode;
+  if(mode === 'chat') ensureChatGreeting();
+  syncCpMode();
+  renderCopilot();
+  var ta = document.getElementById('cp-text');
+  if(ta) ta.focus();
+  toast(mode === 'chat' ? '已切到「参谋对话」，工作台上下文已挂载' : '已切回「录入拆解」，仍按确认卡写入', 'ok');
+}
+
+/* ——— 上下文构建：只用 待办 / 项目 / 留痕 / 复盘 ——— */
+function advFlat(s){ return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
+function advCut(s, n){ s = advFlat(s); return s.length > n ? s.slice(0, n) + '…' : s; }
+function advHM(){ var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+function advDueText(u){
+  if(!u) return '无截止日期';
+  if(u.diff < 0){ var od = urgOverdue(u); return '已逾期 ' + od.n + od.unit; }
+  if(u.diff === 0) return '今日到期';
+  if(u.diff === 1) return '明日到期';
+  return '还剩 ' + u.diff + ' 天';
+}
+
+function advTodoLine(t){
+  var u = urgInfo(t);
+  var p = findProject(t.projectId);
+  var meta = ['项目：' + (p ? p.name : '不挂靠项目')];
+  if(u) meta.push('截止 ' + fmtD(u.ts) + ' · ' + advDueText(u));
+  else meta.push('无截止日期');
+  if(t.cycleType && t.cycleType !== 'once') meta.push('循环 ' + (TODO_CYCLE[t.cycleType] || t.cycleType));
+  if(t.isPinned) meta.push('已置顶');
+  var line = '- ' + advFlat(t.title) + '｜' + meta.join('｜');
+  if(t.note) line += '｜备注：' + advCut(t.note, 60);
+  return line;
+}
+
+function advCheckLine(t){
+  var nowHM = advHM();
+  var arr = t.checkTimes.map(function(c){
+    if(c.done) return c.time + '✓已打卡';
+    return c.time + (c.time <= nowHM ? '✗已过时未打卡' : '待打卡');
+  });
+  var line = '- ' + advFlat(t.title) + '｜今日 ' + checkedCount(t) + '/' + t.checkTimes.length + ' 次' + '｜' + arr.join('，');
+  if(t.note) line += '｜备注：' + advCut(t.note, 40);
+  return line;
+}
+
+function advLogLine(l){
+  var d = new Date(l.timestamp);
+  var p = findProject(l.projectId);
+  var ts = pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  return '[' + ts + '] [' + (p ? p.name : '独立工作日记') + '] [' + normalizeLogType(l.type) + '] ' + advCut(l.content, 120);
+}
+
+function buildAdvisorContext(){
+  var now = new Date();
+  var sod = startOfDayTs(Date.now());
+  var out = [];
+
+  /* 1. 时空锚点 */
+  out.push('【当前时间】' + now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 星期' +
+    '日一二三四五六'.charAt(now.getDay()) + ' ' + advHM() + '（今天：' + dayKindLabel(todayStr()) + '）');
+
+  /* 2. 今日待办与紧迫度全景 */
+  var sp = todoSplit();
+  var focus = sp.focus || [];
+  var hot = [], chk = [], rest = [], hotIds = {};
+
+  focus.forEach(function(t){
+    var u = urgInfo(t);
+    if(t.isPinned || (u && u.diff <= 3)){ hot.push(t); hotIds[t.id] = 1; }
+    if(hasChecks(t)) chk.push(t);
+  });
+  focus.forEach(function(t){
+    if(hotIds[t.id] || hasChecks(t)) return;
+    if(rest.length >= 25) return;
+    rest.push(t);
+  });
+
+  out.push('');
+  out.push('【A. 置顶 / 逾期 / 3 天内临期】（共 ' + hot.length + ' 条）');
+  if(hot.length) hot.forEach(function(t){ out.push(advTodoLine(t)); });
+  else out.push('- 无');
+
+  out.push('');
+  out.push('【B. 今日分时打卡进度】（共 ' + chk.length + ' 条，现在 ' + advHM() + '）');
+  if(chk.length) chk.forEach(function(t){ out.push(advCheckLine(t)); });
+  else out.push('- 今日没有分时打卡任务');
+
+  out.push('');
+  out.push('【C. 其余未完成待办】（共 ' + rest.length + ' 条，最多列 25 条）');
+  if(rest.length) rest.forEach(function(t){ out.push(advTodoLine(t)); });
+  else out.push('- 无');
+
+  var doneToday = state.todos.filter(function(t){ return t.isCompleted && t.completedAt && t.completedAt >= sod; });
+  doneToday.sort(function(a, b){ return (b.completedAt || 0) - (a.completedAt || 0); });
+  out.push('');
+  out.push('【D. 今日已完成】（共 ' + doneToday.length + ' 条）');
+  if(doneToday.length){
+    doneToday.forEach(function(t){
+      var p = findProject(t.projectId);
+      out.push('- ' + advCut(t.title, 70) + '（' + (p ? p.name : '不挂靠项目') + '，完成于 ' + fmtDT(t.completedAt) + '）');
+    });
+  }else out.push('- 今天还没有勾掉任何待办');
+
+  /* 3. 近期工作留痕与复盘 */
+  var todayLogs = state.logs.filter(function(l){ return l.timestamp >= sod; });
+  todayLogs.sort(function(a, b){ return (b.timestamp || 0) - (a.timestamp || 0); });
+  var weekLogs = state.logs.filter(function(l){ return l.timestamp >= sod - 7 * DAY && l.timestamp < sod; });
+  weekLogs.sort(function(a, b){ return (b.timestamp || 0) - (a.timestamp || 0); });
+  weekLogs = weekLogs.slice(0, 30);
+
+  out.push('');
+  out.push('【E. 近期工作留痕】（今日 ' + todayLogs.length + ' 条；近 7 天另列最新 ' + weekLogs.length + ' 条）');
+  if(todayLogs.length){
+    out.push('— 今日 —');
+    todayLogs.forEach(function(l){ out.push(advLogLine(l)); });
+  }
+  if(weekLogs.length){
+    out.push('— 近 7 天 —');
+    weekLogs.forEach(function(l){ out.push(advLogLine(l)); });
+  }
+  if(!todayLogs.length && !weekLogs.length) out.push('- 最近 7 天还没有时间流记录');
+
+  if(state.view === 'review'){
+    var agg = aggregate(state.reviewRange);
+    var txt = '';
+    try{ txt = aggToText(agg); }catch(e){ txt = ''; }
+    out.push('');
+    out.push('【F. 当前复盘区间汇总（用户此刻正停留在「时间复盘」）】区间：' + agg.label);
+    out.push(txt ? String(txt).slice(0, 6000) : '（区间内暂无记录）');
+  }
+
+  /* 4. 进行中的项目与备忘 */
+  var actives = state.projects.filter(function(p){ return pstate(p) === 'active'; });
+  out.push('');
+  out.push('【G. 进行中的项目】（共 ' + actives.length + ' 个）');
+  if(!actives.length) out.push('- 暂无进行中项目');
+  actives.forEach(function(p){
+    out.push('');
+    out.push('## ' + advFlat(p.name) + '｜' + (CAT_LABEL[p.category] || '全年重点 / 常态') +
+      '｜进度 ' + (p.status || 0) + '%｜截止 ' + (p.deadline || '未设') +
+      (p.standard ? '｜标准：' + advCut(p.standard, 60) : ''));
+    var subs = state.subtasks.filter(function(s){ return s.projectId === p.id && !s.isCompleted; });
+    if(subs.length){
+      out.push('未完成子任务：');
+      subs.forEach(function(s){
+        var bits = [SUB_CYCLE[s.cycleType] || '一次性节点'];
+        if(s.dueDate) bits.push('节点 ' + s.dueDate);
+        if(s.cycleType === 'semimonthly') bits.push('每月 ' + normDays(s.monthlyDays, [1, 15]).join('、') + ' 日');
+        if(s.checkTimes && s.checkTimes.length) bits.push('打卡 ' + s.checkTimes.map(function(c){ return c.time; }).join('/'));
+        out.push('- ' + advCut(s.title, 60) + '（' + bits.join(' · ') + '）');
+      });
+    }else out.push('未完成子任务：无');
+    var notes = String(p.quickNotes || '').split(/\r?\n/).map(function(x){ return x.trim(); }).filter(Boolean);
+    if(notes.length) out.push('常用信息 / 对接人 / 台账路径：' + notes.slice(0, 8).join('；'));
+  });
+
+  var text = out.join('\n');
+  /* 兜底：上下文过长时截断，避免把接口顶爆 */
+  return text.length > 14000 ? text.slice(0, 14000) + '\n…（上下文过长，已截断）' : text;
+}
+
+function advisorSystemPrompt(){
+  return [
+    '你是街道基层干部（综治/平安建设/党政综合岗）的贴身「参谋长与防打断副驾驶」。',
+    '用户身兼多职（线上业务系统巡查流转、线下入户调解、文字材料、财务报销、社区联络），经常被领导临时电话或突发任务打断思路。',
+    '',
+    '你的核心职责：',
+    '1. 【防打断与排优先级】：当用户问“现在先干嘛”时，第一顺位永远盯死“刚性考核时限”（尤其是系统巡查签收、今日到点分时打卡、已逾期/今日截止事项，绝不能漏看超时）；第二顺位处理耗时短的闭环尾巴（如签字报销、电话核实）；最后安排大块材料工作。每次只给最清晰的 1~3 步行动建议，帮用户快速找回工作状态，不要长篇大论制造焦虑。',
+    '2. 【进度追问与材料起草】：当用户询问某项目进展，或要求基于近期工作写汇报/小结/情况说明时，严格基于上下文中的【近期工作留痕】、【时间复盘】和【已完成待办】作答，实事求是，绝不编造未发生的事实和数据。',
+    '3. 【务实文风】：说话干脆、利落、温和、懂基层痛点，不打官腔，不说假大空的废话。用清晰的序号或短句排版。',
+    '',
+    '以下是用户工作台的实时全量数据上下文：',
+    buildAdvisorContext()
+  ].join('\n');
+}
+
+/* ——— 流式输出：SSE 边收边显示；不支持就回退整段 ——— */
+function aiContentOf(j){
+  var msg = j && j.choices && j.choices[0] && j.choices[0].message;
+  if(msg){
+    var c = msg.content;
+    if(Array.isArray(c)) return c.map(function(p){ return (p && p.text) || ''; }).join('');
+    if(c) return String(c);
+  }
+  if(j && j.message && j.message.content) return String(j.message.content);
+  return '';
+}
+
+function parseSSEText(text, onDelta){
+  var full = '';
+  String(text).split(/\r?\n/).forEach(function(line){
+    line = line.replace(/\r$/, '').trim();
+    if(line.indexOf('data:') !== 0) return;
+    var payload = line.slice(5).trim();
+    if(!payload || payload === '[DONE]') return;
+    var j; try{ j = JSON.parse(payload); }catch(e){ return; }
+    var ch = (j.choices && j.choices[0]) || {};
+    var d = ch.delta || ch.message || {};
+    var piece = d.content;
+    if(Array.isArray(piece)) piece = piece.map(function(p){ return (p && p.text) || ''; }).join('');
+    if(piece) full += piece;
+  });
+  if(onDelta) onDelta(full);
+  return full;
+}
+
+function readSSE(body, onDelta){
+  var reader = body.getReader();
+  var dec = new TextDecoder('utf-8');
+  var buf = '', full = '', reasoning = '';
+  function feed(line){
+    line = String(line).replace(/\r$/, '');
+    if(!line || line.charAt(0) === ':') return;
+    if(line.indexOf('data:') !== 0) return;
+    var payload = line.slice(5).trim();
+    if(!payload || payload === '[DONE]') return;
+    var j; try{ j = JSON.parse(payload); }catch(e){ return; }
+    var ch = (j.choices && j.choices[0]) || {};
+    var d = ch.delta || ch.message || {};
+    var piece = d.content;
+    if(Array.isArray(piece)) piece = piece.map(function(p){ return (p && p.text) || ''; }).join('');
+    if(piece){
+      full += piece;
+      if(onDelta) onDelta(full);
+    }else if(d.reasoning_content){
+      reasoning += d.reasoning_content;
+      if(!full && onDelta) onDelta('正在推理…');
+    }
+  }
+  function pump(){
+    return reader.read().then(function(r){
+      if(r.done){
+        if(buf) feed(buf);
+        if(!full && reasoning){
+          full = reasoning;
+          if(onDelta) onDelta(full);
+        }
+        return full;
+      }
+      buf += dec.decode(r.value, { stream: true });
+      var idx;
+      while((idx = buf.indexOf('\n')) >= 0){
+        feed(buf.slice(0, idx));
+        buf = buf.slice(idx + 1);
+      }
+      return pump();
+    });
+  }
+  return pump();
+}
+
+function callAIStream(messages, onDelta){
+  return fetch(baseURL() + '/chat/completions', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ model: state.config.model, messages: messages, temperature: 0.5, stream: true })
+  }).then(function(res){
+    if(!res.ok){
+      return res.text().then(function(t){ throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 180)); });
+    }
+    var ct = String(res.headers.get('content-type') || '').toLowerCase();
+    if(ct.indexOf('text/event-stream') < 0 || !res.body || typeof res.body.getReader !== 'function'){
+      /* 服务端没按 SSE 返回（有的中转直接忽略 stream）：整段读回来再判断 */
+      return res.text().then(function(raw){
+        var s = String(raw || '').trim();
+        if(!s) throw new Error('返回为空');
+        if(s.charAt(0) === '{'){
+          var c = aiContentOf(JSON.parse(s));
+          if(!c) throw new Error('返回格式无法识别');
+          if(onDelta) onDelta(c);
+          return c;
+        }
+        if(s.indexOf('data:') === 0) return parseSSEText(s, onDelta);
+        if(onDelta) onDelta(s);
+        return s;
+      });
+    }
+    return readSSE(res.body, onDelta);
+  });
+}
+
+/* 流式时只替换这一个文本节点，避免整屏重绘 */
+function liveAiBubble(id, text){
+  var el = document.querySelector('[data-msg="' + id + '"] .msg-txt');
+  if(el) el.textContent = text;
+  var box = document.getElementById('cp-body');
+  if(box) box.scrollTop = box.scrollHeight;
+}
+
+/* 多轮记忆：只带纯对话，欢迎语 / 问候语 / 报错 / 操作卡记录都排除 */
+function chatHistoryForAI(){
+  var pool = state.cpMessages.filter(function(m){
+    if(m.howto || m.greet || m.err) return false;
+    if(m.ops && m.ops.length) return false;
+    if(m.role !== 'user' && m.role !== 'ai') return false;
+    return !!(m.text && String(m.text).trim());
+  });
+  return pool.slice(-8);
+}
+
+async function cpRunChat(text, imgs){
+  imgs = imgs || [];
+  var messages = [{ role:'system', content: advisorSystemPrompt() }];
+  var history = chatHistoryForAI();
+  history.forEach(function(m, i){
+    var isLast = (i === history.length - 1);
+    var body = (m.role === 'user')
+      ? ((m.raw != null && m.raw !== '') ? m.raw : m.text)
+      : String(m.text || '');
+    if(isLast && m.role === 'user' && imgs.length){
+      messages.push({ role:'user', content: [{ type:'text', text: body || '请结合这张图片回答。' }].concat(
+        imgs.map(function(im){ return { type:'image_url', image_url:{ url: im.dataUrl } }; })
+      ) });
+    }else{
+      messages.push({ role: m.role === 'user' ? 'user' : 'assistant', content: body });
+    }
+  });
+
+  var thinkMsg = { id: uid('m'), role:'ai', chat:true, live:true, text:'正在读取工作台上下文…' };
+  state.cpMessages.push(thinkMsg);
+  state.cpBusy = true;
+  renderCopilot();
+
+  try{
+    if(!isConfigured()){
+      thinkMsg.text = '参谋对话需要先在「AI 接口设置」里填 Base URL、Key 和模型名。\n现在没有接口，只能用「录入拆解」的本地规则做离线拆解。';
+      thinkMsg.live = false;
+      thinkMsg.err = true;
+      state.cpBusy = false;
+      renderCopilot();
+      return;
+    }
+    var full = '';
+    try{
+      full = await callAIStream(messages, function(t){
+        thinkMsg.text = t;
+        liveAiBubble(thinkMsg.id, t);
+      });
+    }catch(e1){
+      /* 流式不被支持 / 中途断流：无缝回退到整段请求 */
+      full = await callAI(messages);
+      if(full){ thinkMsg.text = full; liveAiBubble(thinkMsg.id, full); }
+    }
+    full = String(full || '').trim();
+    thinkMsg.text = full || '这次没有生成内容（可能是模型返回空或被限流）。可以再点一次「重发」，或者把问题问得更具体一点。';
+    if(!full) thinkMsg.err = true;
+  }catch(err){
+    thinkMsg.err = true;
+    thinkMsg.text = '调用失败：' + (err && err.message ? err.message : String(err)) +
+      '\n可以检查 Base URL / Key / 模型名，或确认该接口是否支持 stream 流式返回。';
+  }
+  thinkMsg.live = false;
+  state.cpBusy = false;
+  renderCopilot();
+}
+
+async function cpChatRegenerate(){
+  if(state.cpBusy){ toast('正在生成，请稍候', 'warn'); return; }
+  var userMsg = cpLastUserMsg();
+  if(!userMsg){ toast('还没有可重新发送的消息', 'warn'); return; }
+  var idx = state.cpMessages.indexOf(userMsg);
+  if(idx < 0) return;
+  state.cpMessages = state.cpMessages.slice(0, idx + 1);
+  var raw = (userMsg.raw != null && userMsg.raw !== '') ? userMsg.raw : userMsg.text;
+  await cpRunChat(raw, (userMsg.imgs || []).slice());
+}
+
+/* ——— 快捷指令 / 清空 / 复制 / 转去拆解 ——— */
+function cpQuickSend(i){
+  var q = CP_QUICK[i];
+  if(!q) return;
+  if(state.cpMode !== 'chat'){
+    state.cpMode = 'chat';
+    ensureChatGreeting();
+    syncCpMode();
+    renderCopilot();
+  }
+  var ta = document.getElementById('cp-text');
+  if(!ta) return;
+  ta.value = q.v;
+  cpSend();
+}
+
+function cpClearChat(){
+  if(state.cpBusy){ toast('正在生成，请稍候', 'warn'); return; }
+  var pending = false;
+  for(var i = 0; i < state.cpMessages.length; i++){
+    var m = state.cpMessages[i];
+    if(m.ops && m.ops.length && !m.opsDone){ pending = true; break; }
+  }
+  if(pending && !confirm('还有未确认的拆解方案，清空后这些确认卡会一起消失。确定清空对话吗？')) return;
+  state.cpMessages = [copilotWelcome()];
+  if(state.cpMode === 'chat') ensureChatGreeting();
+  renderCopilot();
+  toast('对话已清空（欢迎语保留）', 'ok');
+}
+
+function findCpMsg(id){
+  for(var i = 0; i < state.cpMessages.length; i++){
+    if(state.cpMessages[i].id === id) return state.cpMessages[i];
+  }
+  return null;
+}
+
+function legacyCopy(txt){
+  try{
+    var ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+
+function cpCopyMsg(id){
+  var m = findCpMsg(id);
+  if(!m) return;
+  var txt = String(m.text || '');
+  function ok(){ toast('已复制这条回复', 'ok'); }
+  function fail(){ toast('复制失败，可以手动选中文字复制', 'warn'); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok).catch(function(){ legacyCopy(txt) ? ok() : fail(); });
+  }else{
+    legacyCopy(txt) ? ok() : fail();
+  }
+}
+
+function cpToAction(id){
+  var m = findCpMsg(id);
+  if(!m) return;
+  var ta = document.getElementById('cp-text');
+  if(ta) ta.value = String(m.text || '');
+  state.cpMode = 'action';
+  syncCpMode();
+  renderCopilot();
+  if(ta){
+    ta.focus();
+    try{ ta.setSelectionRange(ta.value.length, ta.value.length); }catch(e){}
+    ta.scrollTop = 0;
+  }
+  toast('已填入输入框并切回「录入拆解」，发送前可以再改一改', 'ok');
+}
+
 async function cpRun(text, imgs, opts){
   opts = opts || {};
   var thinkMsg = { id: uid('m'), role:'ai', text:'正在解析…' };
@@ -11688,12 +12296,14 @@ async function cpSend(){
 
   var userMsg = { id: uid('m'), role:'user', text: text || ('（图片 ' + imgs.length + ' 张）'), raw: text, imgs: imgs };
   state.cpMessages.push(userMsg);
+  if(state.cpMode === 'chat') return cpRunChat(text || ('（图片 ' + imgs.length + ' 张）'), imgs);
   return cpRun(text, imgs, { regenerate:false });
 }
 
 /* 重新发送上一条用户消息：删掉旧回答，不重复用户气泡，也不清空输入框草稿 */
 async function cpRegenerate(){
   if(state.cpBusy){ toast('正在生成，请稍候', 'warn'); return; }
+  if(state.cpMode === 'chat'){ return cpChatRegenerate(); }
   var userMsg = cpLastUserMsg();
   if(!userMsg){ toast('还没有可重新发送的消息', 'warn'); return; }
   var answer = cpLastAnswer();
@@ -14865,6 +15475,11 @@ document.addEventListener('click', function(e){
   if(act === 'ai-report'){ generateReport(); return; }
   if(act === 'cp-send'){ cpSend(); return; }
   if(act === 'cp-retry'){ cpRegenerate(); return; }
+  if(act === 'cp-mode'){ setCpMode(el.dataset.mode); return; }
+  if(act === 'cp-quick'){ cpQuickSend(parseInt(el.dataset.i, 10)); return; }
+  if(act === 'cp-clear'){ cpClearChat(); return; }
+  if(act === 'cp-copy'){ cpCopyMsg(el.dataset.id); return; }
+  if(act === 'cp-to-action'){ cpToAction(el.dataset.id); return; }
   if(act === 'op-add-time'){ opAddTime(el); return; }
   if(act === 'op-enable-times'){ opEnableTimes(el); return; }
   if(act === 'op-del-time'){ opDelTime(el); return; }
