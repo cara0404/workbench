@@ -412,6 +412,8 @@ textarea.input{resize:vertical;line-height:1.6}
 .rev-li:hover .li-act{opacity:.5}
 .rev-li .li-act:hover{opacity:1;background:var(--bg2);border-color:var(--ink)}
 .rev-li::before{content:"—";position:absolute;left:0;opacity:.4}
+/* 待办 / 子任务的完成时刻：比正文小一号、浅一点，不抢正文 */
+.rev-when{margin-left:7px;font-size:11px;opacity:.55;white-space:nowrap;letter-spacing:.02em}
 
 /* 副驾驶 */
 .copilot{border-left:2px solid var(--ink);background:#fff;display:flex;flex-direction:column;min-width:0;overflow:hidden}
@@ -2531,7 +2533,7 @@ html[data-theme="library"] .msg-tool:hover{background:none;color:var(--green);bo
       <button class="btn btn-sm btn-block btn-mini btn-init" data-act="open-init">初始化工作台</button>
     </div>
 
-    <div class="side-foot" id="storage-foot">V1.27.3 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
+    <div class="side-foot" id="storage-foot">V1.27.4 · 单文件本地运行<br>存储：本地缓存（file:// 兼容模式）</div>
   </aside>
   <button type="button" class="side-mask" id="side-mask" data-act="close-sidebar" aria-label="关闭导航" tabindex="-1"></button>
 
@@ -3757,6 +3759,14 @@ function fmtDWeek(ts){
   var d = new Date(ts);
   return fmtD(ts) + ' 周' + '日一二三四五六'.charAt(d.getDay());
 }
+/* 待办 / 子任务的勾选时刻：09:12、2026-11-10 周二 09:12、11月10日 09:12 */
+function fmtHM(ts){
+  if(!ts) return '';
+  var d = new Date(ts);
+  return pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function fmtDWeekHM(ts){ return ts ? fmtDWeek(ts) + ' ' + fmtHM(ts) : ''; }
+function fmtMDHM(ts){ return ts ? fmtMD(ts) + ' ' + fmtHM(ts) : ''; }
 function toInput(ts){
   var d = new Date(ts);
   return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -9095,7 +9105,7 @@ function renderSidebar(){
     }else{
       line2 = '存储：IndexedDB · 数据不出本机';
     }
-    foot.innerHTML = 'V1.27.3 · 单文件本地运行<br>' + line2;
+    foot.innerHTML = 'V1.27.4 · 单文件本地运行<br>' + line2;
   }
   if(!('Notification' in window)){
     btn.textContent = '浏览器不支持桌面通知';
@@ -10465,6 +10475,14 @@ function renderReview(){
   body.innerHTML = renderRevByCategory(agg);
 }
 
+/* 完成事项里的一行：标题 + 类型 + 完成时刻（复盘要能看出「哪天几点做的」） */
+function revDoneHTML(item, isSub){
+  return '<div class="rev-li">' + esc(item.title) +
+    ' <span class="chip ' + (isSub ? 'pl' : 'm') + '">' + (isSub ? '子任务' : '待办') + '</span>' +
+    (item.completedAt ? '<span class="rev-when">' + fmtDWeekHM(item.completedAt) + '</span>' : '<span class="rev-when">时间未记录</span>') +
+    '</div>';
+}
+
 function revGroupHTML(pid, g){
   var p = null;
   for(var i=0;i<state.projects.length;i++){ if(state.projects[i].id === pid) p = state.projects[i]; }
@@ -10477,8 +10495,8 @@ function revGroupHTML(pid, g){
 
   if(g.todos.length || g.subs.length){
     html += '<div class="rev-sec">完成事项</div>';
-    g.todos.forEach(function(t){ html += '<div class="rev-li">' + esc(t.title) + ' <span class="chip m">待办</span></div>'; });
-    g.subs.forEach(function(s){ html += '<div class="rev-li">' + esc(s.title) + ' <span class="chip pl">子任务</span></div>'; });
+    g.todos.forEach(function(t){ html += revDoneHTML(t, false); });
+    g.subs.forEach(function(s){ html += revDoneHTML(s, true); });
   }
 
   var byType = { '日常':[], '进展':[], '成效':[], '问题':[], '整改':[] };
@@ -10560,8 +10578,8 @@ function renderRevByCategory(agg){
     var body = '';
     if(orphan.todos.length || orphan.subs.length){
       body += '<div class="rev-sec">完成事项</div>';
-      orphan.todos.forEach(function(t){ body += '<div class="rev-li">' + esc(t.title) + ' <span class="chip m">待办</span></div>'; });
-      orphan.subs.forEach(function(s){ body += '<div class="rev-li">' + esc(s.title) + ' <span class="chip pl">子任务</span></div>'; });
+      orphan.todos.forEach(function(t){ body += revDoneHTML(t, false); });
+      orphan.subs.forEach(function(s){ body += revDoneHTML(s, true); });
     }
     var byType = { '日常':[], '进展':[], '成效':[], '问题':[], '整改':[] };
     orphan.logs.forEach(function(l){ var k = normalizeLogType(l.type); (byType[k] = byType[k] || []).push(l); });
@@ -14301,8 +14319,8 @@ function aggToText(agg){
       for(var i=0;i<state.projects.length;i++){ if(state.projects[i].id === pid) p = state.projects[i]; }
       lines.push('');
       lines.push('## 项目：' + (p ? p.name : '不挂靠项目（独立工作日记）'));
-      if(g.todos.length) lines.push('已完成待办：' + g.todos.map(function(t){ return t.title; }).join('；'));
-      if(g.subs.length) lines.push('已完成子任务：' + g.subs.map(function(t){ return t.title; }).join('；'));
+      if(g.todos.length) lines.push('已完成待办：' + g.todos.map(function(t){ return (t.completedAt ? fmtMDHM(t.completedAt) + ' ' : '') + t.title; }).join('；'));
+      if(g.subs.length) lines.push('已完成子任务：' + g.subs.map(function(t){ return (t.completedAt ? fmtMDHM(t.completedAt) + ' ' : '') + t.title; }).join('；'));
       ['日常','进展','成效','问题','整改'].forEach(function(t){
         var arr = g.logs.filter(function(l){ return normalizeLogType(l.type) === t; });
         if(arr.length) lines.push((t === '日常' ? '日常工作留痕' : t) + '：' + arr.map(function(l){ return l.content; }).join('；'));
@@ -14316,27 +14334,54 @@ function localReport(agg){
   function norm(x){ return String(x).replace(/[（）()【】\[\]·、，,。：:\s]/g, ''); }
   function clean(x){ return String(x == null ? '' : x).trim().replace(/[。；;]+$/, ''); }
 
+  /* 同类事项合并，但把时间留下：单次 →（11月10日 09:12）；多次 →（共5次，11月3日—11月10日） */
   function collect(pid){
     var g = agg.map[pid];
-    var items = [];
-    var seen = {};
-    g.todos.forEach(function(t){
-      var key = norm(t.title);
-      if(seen[key]) return;
-      seen[key] = 1;
-      items.push(t.title);
-    });
-    g.subs.forEach(function(s){
-      var dup = seen[norm(s.title)] || g.todos.some(function(t){
-        var a = norm(t.title), b = norm(s.title);
-        return a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
-      });
-      if(!dup){
-        seen[norm(s.title)] = 1;
-        items.push(s.title);
+    var items = [], index = {};
+    function add(title, ts){
+      var key = norm(title);
+      if(!key) return;
+      var hit = index[key];
+      if(hit){
+        hit.n++;
+        if(ts){
+          if(!hit.first || ts < hit.first) hit.first = ts;
+          if(!hit.last || ts > hit.last) hit.last = ts;
+        }
+        return;
       }
+      hit = { title: title, first: ts || 0, last: ts || 0, n: 1 };
+      index[key] = hit;
+      items.push(hit);
+    }
+    g.todos.forEach(function(t){ add(t.title, t.completedAt); });
+    g.subs.forEach(function(s){
+      var b = norm(s.title);
+      var dup = null;
+      for(var i = 0; i < items.length; i++){
+        var a = norm(items[i].title);
+        if(a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0){ dup = items[i]; break; }
+      }
+      if(dup){
+        dup.n++;
+        if(s.completedAt){
+          if(!dup.first || s.completedAt < dup.first) dup.first = s.completedAt;
+          if(!dup.last || s.completedAt > dup.last) dup.last = s.completedAt;
+        }
+        return;
+      }
+      add(s.title, s.completedAt);
     });
     return items;
+  }
+
+  function whenText(it){
+    if(!it || !it.last) return '';
+    if(it.n > 1 && it.first && fmtD(it.first) !== fmtD(it.last)){
+      return '（共' + it.n + '次，' + fmtMD(it.first) + '—' + fmtMD(it.last) + '）';
+    }
+    if(it.n > 1) return '（共' + it.n + '次，' + fmtMDHM(it.last) + '）';
+    return '（' + fmtMDHM(it.last) + '）';
   }
 
   function numbered(lines, label, arr, pick){
@@ -14367,7 +14412,7 @@ function localReport(agg){
       var logs = g.logs || [];
       var items = collect(pid);
       var hasBody = false;
-      if(items.length){ numbered(lines, '完成事项：', items, function(x){ return x; }); hasBody = true; }
+      if(items.length){ numbered(lines, '完成事项：', items, function(x){ return clean(x.title) + whenText(x); }); hasBody = true; }
       var dailyLogs = logs.filter(function(l){ return normalizeLogType(l.type) === '日常'; });
       if(dailyLogs.length){
         numbered(lines, '日常工作留痕：', dailyLogs, function(l){ return l.content; });
